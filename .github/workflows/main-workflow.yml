@@ -31,6 +31,7 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ap-northeast-2
 
+        
     - name: upload to S3
       run: aws s3 cp --region ap-northeast-2 ./Spark-streaming.tar.gz s3://datalake-actions-deploy-spark-streaming/Spark-streaming/Spark-streaming.tar.gz
 
