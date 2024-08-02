@@ -1,6 +1,6 @@
-from kafka_Spark_config import KafkaConfig
-from data_schema import get_schema
-from data_processing import DataProcessor
+from config.kafka_Spark_config import KafkaConfig
+from Data.data_schema import get_schema
+from Data.data_processing import DataProcessor
 
 # Kafka 설정
 kafka_config = KafkaConfig(topic_name="bike-station-info", 
