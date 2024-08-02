@@ -9,7 +9,14 @@ class KafkaConfig:
         spark = (
             SparkSession.builder
             .appName(app_name)
-            .config('spark.jars.packages', 'org.apache.spark:spark-sql-kafka-0-10_2.12:3.3.0')
+            .config("spark.jars.packages",
+            "org.apache.spark:spark-sql-kafka-0-10_2.12:3.3.0,org.apache.kafka:kafka-clients:2.7.0,org.apache.hadoop:hadoop-aws:3.3.1,com.amazonaws:aws-java-sdk-bundle:1.11.901")
+            .config("spark.hadoop.fs.s3a.access.key", your_access_key_id)
+            .config("spark.hadoop.fs.s3a.secret.key", your_secret_access_key)
+            .config("spark.hadoop.fs.s3a.endpoint", "s3.ap-northeast-2.amazonaws.com")
+            .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+            .config("spark.hadoop.fs.s3a.path.style.access", "true")
+            .master("local[*]")
             .getOrCreate()
         )
         spark.sparkContext.setLogLevel("ERROR")
