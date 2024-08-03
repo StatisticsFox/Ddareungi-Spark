@@ -1,3 +1,4 @@
+# redis_config.py
 import redis
 import redis.sentinel
 
@@ -11,3 +12,12 @@ class RedisConfig:
         sentinel = redis.sentinel.Sentinel(self.sentinel_hosts)
         master = sentinel.discover_master(self.master_name)
         return master
+    
+    # Redis에 데이터를 쓰는 함수
+    def write_to_redis(self, batch_df, batch_id):
+        batch_df.write \
+        .format("org.apache.spark.sql.redis") \
+        .option("table", "bike_stations") \
+        .option("key.column", "stationId") \
+        .mode("append") \
+        .save()

@@ -1,3 +1,4 @@
+# kafka_spark_config.py
 from pyspark.sql import SparkSession
 
 class KafkaConfig:
@@ -5,7 +6,16 @@ class KafkaConfig:
         self.topic_name = topic_name
         self.bootstrap_servers = bootstrap_servers
 
-    def create_spark_session(self, app_name):
+    def get_key(self):
+        with open("your_access_key_id.bin", "r", encoding="UTF-8") as api_key_file:
+            your_access_key_id = api_key_file.read().strip()
+
+        with open("your_secret_access_key.bin", "r", encoding="UTF-8") as api_key_file:
+            your_secret_access_key = api_key_file.read().strip()
+        
+        return your_access_key_id, your_secret_access_key
+    
+    def create_spark_session(self, app_name, your_access_key_id, your_secret_access_key):
         spark = (
             SparkSession.builder
             .appName(app_name)

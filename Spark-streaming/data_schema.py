@@ -1,3 +1,4 @@
+# data_schema.py
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType
 
 def get_schema():
