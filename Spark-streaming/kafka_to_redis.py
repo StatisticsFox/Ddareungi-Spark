@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from data_schema import get_schema
+from data_schema import get_schema_redis
 from kafka_Spark_config import KafkaConfig
 from redis_config import RedisConfig
 from pyspark.sql import functions as F
@@ -42,7 +42,7 @@ kafka_config = KafkaConfig(topic_name="bike-station-info",
 kafka_df = kafka_config.read_from_kafka(spark)
 
 # JSON 문자열을 StructType으로 변환하기 위한 스키마 정의
-schema = get_schema()
+schema = get_schema_redis()
 
 # JSON 데이터를 스키마에 맞게 변환
 value_df = kafka_df.select(F.from_json(F.col("value"), schema).alias("value"))
