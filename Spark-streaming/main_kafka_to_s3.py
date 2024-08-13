@@ -4,7 +4,7 @@ from data_schema import get_schema
 from data_processing import DataProcessor
 
 kafka_config = KafkaConfig(topic_name="bike-station-info", 
-                           bootstrap_servers="kafak_node1:9092,kafak_node2:9092,kafak_node3:9092")
+                           bootstrap_servers="kafka_node1:9092,kafka_node2:9092,kafka_node3:9092")
 
 your_access_key_id, your_secret_access_key = kafka_config.get_key()
 spark = kafka_config.create_spark_session("kafka_streaming_DF", your_access_key_id, your_secret_access_key)
