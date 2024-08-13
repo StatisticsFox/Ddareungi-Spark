@@ -7,10 +7,10 @@ class KafkaConfig:
         self.bootstrap_servers = bootstrap_servers
 
     def get_key(self):
-        with open("your_access_key_id.bin", "r", encoding="UTF-8") as api_key_file:
+        with open("/home/ubuntu/your_access_key_id.bin", "r", encoding="UTF-8") as api_key_file:
             your_access_key_id = api_key_file.read().strip()
 
-        with open("your_secret_access_key.bin", "r", encoding="UTF-8") as api_key_file:
+        with open("/home/ubuntu/your_secret_access_key.bin", "r", encoding="UTF-8") as api_key_file:
             your_secret_access_key = api_key_file.read().strip()
         
         return your_access_key_id, your_secret_access_key
