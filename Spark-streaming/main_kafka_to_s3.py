@@ -1,5 +1,5 @@
 # test_main_kafka_to_S3.py
-from kafka_spark_config import KafkaConfig
+from kafka_Spark_config import KafkaConfig
 from data_schema import get_schema
 from data_processing import DataProcessor
 
