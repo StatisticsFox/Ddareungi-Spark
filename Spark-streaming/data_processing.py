@@ -22,7 +22,7 @@ class DataProcessor:
             T.StructField("stationId", T.StringType(), nullable=False),
             T.StructField("previous_parkingBikeTotCnt", T.IntegerType(), nullable=False),
         ])
-        return spark.createDataFrame([], state_schema)
+        return self.spark.createDataFrame([], state_schema)
 
     # 상태 업데이트 함수
     def update_state(self, batch_df, batch_id):
