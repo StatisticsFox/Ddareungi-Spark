@@ -24,7 +24,6 @@ class DataProcessor:
         ])
         return self.spark.createDataFrame([], state_schema)
 
-    # 상태 업데이트 함수
     def update_state(self, batch_df, batch_id):
         now = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
         joined_df = batch_df.join(self.state_df, on="stationId", how="left")
@@ -58,19 +57,21 @@ class DataProcessor:
 
         self.state_df = new_state_df
 
+        # 정확한 시간 구간 집계를 위해 window 함수를 event_time에 따라 추가
         hourly_summary = changes_df.groupBy(
-            F.window("event_time", "1 hour"),
+            F.window("event_time", "1 hour").alias("window"),
             "stationId"
         ).agg(
             F.sum("rental").alias("total_rental"),
             F.sum("return").alias("total_return")
         ).select(
-            "window.start",
-            "window.end",
+            F.col("window.start").alias("start"),
+            F.col("window.end").alias("end"),
             "stationId",
             "total_rental",
             "total_return"
-        )
+        ).filter(F.col("start") == now)  # 현재 시간대에 해당하는 데이터만 선택
+
         return hourly_summary
         
     def save_to_s3(self, hourly_summary, batch_id):
