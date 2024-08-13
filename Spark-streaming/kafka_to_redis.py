@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
 from data_schema import get_schema
-from kafka_spark_config import KafkaConfig
+from kafka_Spark_config import KafkaConfig
 from redis_config import RedisConfig
 from pyspark.sql import functions as F
 import os
@@ -28,7 +28,7 @@ spark = (
 
 # Kafka 메시지의 값을 읽기
 kafka_config = KafkaConfig(topic_name="bike-station-info", 
-                           bootstrap_servers="kafak_node1:9092,kafak_node2:9092,kafak_node3:9092")
+                           bootstrap_servers="kafka_node1:9092,kafka_node2:9092,kafka_node3:9092")
 kafka_df = kafka_config.read_from_kafka(spark)
 
 # JSON 문자열을 StructType으로 변환하기 위한 스키마 정의
