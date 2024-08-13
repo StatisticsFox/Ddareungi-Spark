@@ -29,7 +29,7 @@ spark = (
 
 # Kafka 메시지의 값을 읽기
 kafka_config = KafkaConfig(topic_name="bike-station-info", 
-                           bootstrap_servers="kafka_node1:9092,kafka_node2:9092,kafka_node3:9092")
+                           bootstrap_servers="172.31.30.11:9092,172.31.39.201:9092,172.31.52.183:9092")
 kafka_df = kafka_config.read_from_kafka(spark)
 
 # JSON 문자열을 StructType으로 변환하기 위한 스키마 정의
