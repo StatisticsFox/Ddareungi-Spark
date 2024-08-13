@@ -15,7 +15,7 @@ class RedisConfig:
 
 
     # Redis에 데이터를 쓰는 함수
-    def write_to_redis(self, batch_df, batch_id):
+    def write_to_redis(self, batch_df):
         batch_df.write \
         .format("org.apache.spark.sql.redis") \
         .option("table", "bike_stations") \
