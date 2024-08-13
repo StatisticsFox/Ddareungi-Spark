@@ -74,7 +74,7 @@ class DataProcessor:
         return hourly_summary
         
     def save_to_s3(self, hourly_summary, batch_id):
-        window_end = hourly_summary.select(F.max("window.end")).collect()[0][0]
+        window_end = hourly_summary.select(F.max("end")).collect()[0][0]
         year = window_end.strftime('%Y')
         month = window_end.strftime('%m')
         day = window_end.strftime('%d')
