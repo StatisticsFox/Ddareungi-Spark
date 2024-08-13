@@ -7,14 +7,17 @@ import redis.sentinel
 import os
 
 # 환경변수에서 sentinel_hosts 가져오기
-sentinel_hosts_env = os.getenv('SENTINEL_HOSTS') # ['172.31.16.56:26379', '172.31.46.109:26379', '172.31.48.186:26379']
-master_name = os.getenv('MASTER_NAME')
-redis_auth = os.getenv('REDIS_AUTH')
+# sentinel_hosts_env = os.getenv('SENTINEL_HOSTS') # ['172.31.16.56:26379', '172.31.46.109:26379', '172.31.48.186:26379']
+# master_name = os.getenv('MASTER_NAME') # mymaster
+# redis_auth = os.getenv('REDIS_AUTH')
+
+sentinel_hosts_env = ['172.31.16.56:26379', '172.31.46.109:26379', '172.31.48.186:26379']
+master_name = 'mymaster' # os.getenv('MASTER_NAME')
+redis_auth = 'mypass' # os.getenv('REDIS_AUTH')
 
 sentinel_hosts = [(host.split(':')[0], int(host.split(':')[1])) for host in sentinel_hosts_env.split(',')]
 redis_config = RedisConfig(sentinel_hosts, master_name, redis_auth)
-master_host, master_port = get_redis_master(sentinel_hosts, master_name, redis_auth)
-
+master_host, master_port = RedisConfig.get_redis_master(sentinel_hosts, master_name, redis_auth)
 
 # Spark 세션 생성
 spark = (
