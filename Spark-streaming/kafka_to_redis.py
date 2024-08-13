@@ -15,6 +15,7 @@ sentinel_hosts = [(host.split(':')[0], int(host.split(':')[1])) for host in sent
 redis_config = RedisConfig(sentinel_hosts, master_name, redis_auth)
 master_host, master_port = get_redis_master(sentinel_hosts, master_name, redis_auth)
 
+
 # Spark 세션 생성
 spark = (
     SparkSession
