@@ -21,7 +21,7 @@ redis_auth = 'mypass' # os.getenv('REDIS_AUTH')
 
 # sentinel_hosts = [(host.split(':')[0], int(host.split(':')[1])) for host in sentinel_hosts_env.split(',')]
 redis_config = RedisConfig(sentinel_hosts, master_name, redis_auth)
-master_host, master_port = redis_config.get_redis_master(sentinel_hosts, master_name, redis_auth)
+master_host, master_port = redis_config.get_redis_master()
 
 # Spark 세션 생성
 spark = (
