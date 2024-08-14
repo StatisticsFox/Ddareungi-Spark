@@ -1,6 +1,7 @@
 from spark_streaming.apps.ddareungi.ddareungi_base_class import DdareungiBaseClass
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
+from pyspark.sql.dataframe import DataFrame
 from datetime import datetime
 
 class DdareungiToS3(DdareungiBaseClass):
@@ -34,7 +35,7 @@ class DdareungiToS3(DdareungiBaseClass):
 
         query.awaitTermination()
 
-    def process_batch(self, df, epoch_id, state_df):
+    def process_batch(self, df: DataFrame, epoch_id, state_df: DataFrame):
         self.logger.write_log('INFO','microbatch start',epoch_id)
 
         json_df = df.select(F.from_json(F.col("value"), self.ddareungi_schema).alias("data")).select("data.*")

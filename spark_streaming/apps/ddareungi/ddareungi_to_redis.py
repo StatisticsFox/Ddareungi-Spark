@@ -1,7 +1,7 @@
 from spark_streaming.apps.ddareungi.ddareungi_base_class import DdareungiBaseClass
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
-
+from pyspark.sql.dataframe import DataFrame
 
 class DdareungiToRedis(DdareungiBaseClass):
     def __init__(self, app_name):
@@ -24,7 +24,7 @@ class DdareungiToRedis(DdareungiBaseClass):
 
         query.awaitTermination()
 
-    def process_batch(self, df, epoch_id):
+    def process_batch(self, df: DataFrame, epoch_id):
         self.logger.write_log('INFO', 'microbatch start', epoch_id)
 
         value_df = df.select(F.from_json(F.col("value"), self.ddareungi_schema).alias("value"))
