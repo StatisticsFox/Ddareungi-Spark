@@ -13,8 +13,6 @@ class RedisConfig:
         master = sentinel.discover_master(self.master_name)
         return master
 
-
-    # Redis에 데이터를 쓰는 함수
     # Redis에 데이터를 쓰는 함수
     def write_to_redis(self, batch_df, batch_id):
         batch_df.write \
