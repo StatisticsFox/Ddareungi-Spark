@@ -1,9 +1,8 @@
 from pyspark.sql import SparkSession
-from data_schema import get_schema_redis
+from data_schema import get_schema_all_string
 from kafka_Spark_config import KafkaConfig
 from redis_config import RedisConfig
 from pyspark.sql import functions as F
-import redis.sentinel
 import os
 
 # 환경변수에서 sentinel_hosts 가져오기
@@ -41,8 +40,10 @@ kafka_config = KafkaConfig(topic_name="bike-station-info",
                            bootstrap_servers="172.31.30.11:9092,172.31.39.201:9092,172.31.52.183:9092")
 kafka_df = kafka_config.read_from_kafka(spark)
 
+
+
 # JSON 문자열을 StructType으로 변환하기 위한 스키마 정의
-schema = get_schema_redis()
+schema = get_schema_all_string()
 
 # JSON 데이터를 스키마에 맞게 변환
 value_df = kafka_df.select(F.from_json(F.col("value"), schema).alias("value"))
