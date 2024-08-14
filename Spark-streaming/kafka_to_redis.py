@@ -53,7 +53,7 @@ flattened_df = value_df.select("value.*")
 query = (
     flattened_df.writeStream
     .outputMode("update")
-    .foreachBatch(RedisConfig.write_to_redis)
+    .foreachBatch(lambda batch_df, batch_id: redis_config.write_to_redis(batch_df, batch_id))  # 인스턴스 메서드 호출
     .start()
 )
 
