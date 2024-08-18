@@ -51,8 +51,10 @@ class DdareungiToS3(DdareungiBaseClass):
         total_rows = df.count()
         null_counts = df.select([F.sum(F.col(c).isNull().cast("int")).alias(c) for c in df.columns]).collect()[0]
         for col, null_count in zip(df.columns, null_counts):
-            if null_count > 0:
+            if null_count is not None and null_count > 0:
                 self.logger.write_log('WARNING', f'Column {col} has {null_count} NULL values out of {total_rows} rows', None)
+            elif null_count is None:
+                self.logger.write_log('WARNING', f'Unable to determine NULL count for column {col}', None)
 
     def process_batch(self, df: DataFrame, epoch_id):
         self.logger.write_log('INFO', 'Starting process_batch', epoch_id)
