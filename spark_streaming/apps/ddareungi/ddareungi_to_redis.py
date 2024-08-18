@@ -5,7 +5,7 @@ from pyspark.sql.dataframe import DataFrame
 
 class DdareungiToRedis(DdareungiBaseClass):
     def __init__(self, app_name):
-        super().__init__(self, app_name)
+        super().__init__(app_name)
 
 
     def _main(self):
