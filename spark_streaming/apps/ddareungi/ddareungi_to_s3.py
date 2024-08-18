@@ -6,9 +6,10 @@ from datetime import datetime
 
 class DdareungiToS3(DdareungiBaseClass):
     def __init__(self, app_name):
-        super().__init__(app_name)  # 'self' 인자 제거
+        super().__init__(app_name)
         self.topic_lst = ['bike-station-info']
         self.log_mode = 'DEBUG'
+        self.state_df = None
 
     def _main(self):
         self.logger.write_log('INFO', 'Starting _main method', None)
@@ -22,7 +23,7 @@ class DdareungiToS3(DdareungiBaseClass):
             T.StructField("stationId", T.StringType(), nullable=False),
             T.StructField("previous_parkingBikeTotCnt", T.IntegerType(), nullable=False),
         ])
-        state_df = spark.createDataFrame([], state_schema)
+        self.state_df = spark.createDataFrame([], state_schema)
         self.logger.write_log('INFO', 'state_df initialized', None)
 
         self.logger.write_log('INFO', 'Setting up streaming query', None)
@@ -35,7 +36,7 @@ class DdareungiToS3(DdareungiBaseClass):
                         .load() \
                         .selectExpr("CAST(value AS STRING) as value") \
                         .writeStream \
-                        .foreachBatch(lambda df, epoch_id: self.process_batch(df, epoch_id, state_df)) \
+                        .foreachBatch(self.process_batch) \
                         .outputMode("update") \
                         .start()
             
@@ -46,7 +47,14 @@ class DdareungiToS3(DdareungiBaseClass):
         except Exception as e:
             self.logger.write_log('ERROR', f'Error in streaming query: {str(e)}', None)
 
-    def process_batch(self, df: DataFrame, epoch_id, state_df: DataFrame):
+    def check_data_quality(self, df):
+        total_rows = df.count()
+        null_counts = df.select([F.sum(F.col(c).isNull().cast("int")).alias(c) for c in df.columns]).collect()[0]
+        for col, null_count in zip(df.columns, null_counts):
+            if null_count > 0:
+                self.logger.write_log('WARNING', f'Column {col} has {null_count} NULL values out of {total_rows} rows', None)
+
+    def process_batch(self, df: DataFrame, epoch_id):
         self.logger.write_log('INFO', 'Starting process_batch', epoch_id)
 
         self.logger.write_log('INFO', 'Parsing JSON data', epoch_id)
@@ -54,11 +62,13 @@ class DdareungiToS3(DdareungiBaseClass):
         json_df = json_df.withColumn("event_time", F.to_timestamp("timestamp", "yyyy-MM-dd HH:mm:ss"))
         json_df = json_df.drop("timestamp")
 
+        self.check_data_quality(json_df)
+
         now = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
         self.logger.write_log('INFO', f'Current time: {now}', epoch_id)
 
         self.logger.write_log('INFO', 'Joining dataframes', epoch_id)
-        joined_df = json_df.join(state_df, on="stationId", how="left")
+        joined_df = json_df.join(self.state_df, on="stationId", how="left")
 
         if self.log_mode == 'DEBUG':
             self.logger.write_log('DEBUG', 'joined_df.show()', epoch_id)
@@ -68,6 +78,8 @@ class DdareungiToS3(DdareungiBaseClass):
         changes_df = joined_df.withColumn(
             "previous_parkingBikeTotCnt", F.coalesce(F.col("previous_parkingBikeTotCnt"), F.lit(0))
         ).withColumn(
+            "parkingBikeTotCnt", F.coalesce(F.col("parkingBikeTotCnt"), F.lit(0))
+        ).withColumn(
             "change",
             F.col("parkingBikeTotCnt") - F.col("previous_parkingBikeTotCnt")
         ).withColumn(
@@ -76,31 +88,22 @@ class DdareungiToS3(DdareungiBaseClass):
         ).withColumn(
             "rental",
             F.when(F.col("change") < 0, -F.col("change")).otherwise(0)
-        ).withColumn(
-            "change",
-            F.when(F.col("previous_parkingBikeTotCnt") == 0, 0).otherwise(F.col("change"))
-        ).withColumn(
-            "return",
-            F.when(F.col("previous_parkingBikeTotCnt") == 0, 0).otherwise(F.col("return"))
-        ).withColumn(
-            "rental",
-            F.when(F.col("previous_parkingBikeTotCnt") == 0, 0).otherwise(F.col("rental"))
         )
 
         self.logger.write_log('INFO', 'Updating state', epoch_id)
         new_state_df = changes_df.select(
             F.col("stationId"),
-            F.col("parkingBikeTotCnt").alias("previous_parkingBikeTotCnt")
+            F.coalesce(F.col("parkingBikeTotCnt"), F.col("previous_parkingBikeTotCnt")).alias("previous_parkingBikeTotCnt")
         )
-        state_df = new_state_df
+        self.state_df = self.state_df.union(new_state_df).groupBy("stationId").agg(F.last("previous_parkingBikeTotCnt").alias("previous_parkingBikeTotCnt"))
 
         self.logger.write_log('INFO', 'Calculating hourly summary', epoch_id)
         hourly_summary = changes_df.groupBy(
             F.window("event_time", "1 hour").alias("window"),
             "stationId"
         ).agg(
-            F.sum("rental").alias("total_rental"),
-            F.sum("return").alias("total_return")
+            F.sum(F.coalesce(F.col("rental"), F.lit(0))).alias("total_rental"),
+            F.sum(F.coalesce(F.col("return"), F.lit(0))).alias("total_return")
         ).select(
             F.col("window.start").alias("start"),
             F.col("window.end").alias("end"),
