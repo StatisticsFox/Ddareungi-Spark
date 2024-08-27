@@ -9,6 +9,8 @@ class DdareungiToS3(DdareungiBaseClass):
         super().__init__(app_name)  # 'self' 인자 제거
         self.topic_lst = ['bike-station-info']
         self.log_mode = 'DEBUG'
+        self.checkpoint_location = "/home/ubuntu/ddareungi/checkpoint"  
+        self.state_store_location = "/home/ubuntu/ddareungi/state_store"  
 
     def _main(self):
         self.logger.write_log('INFO', 'Starting _main method', None)
