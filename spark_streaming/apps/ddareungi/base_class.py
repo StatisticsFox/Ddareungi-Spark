@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
-from spark_streaming.common.redis_config import RedisConfig
-from spark_streaming.common.logger import Logger
+from redis_config import RedisConfig
+from logger import Logger
 
 class BaseClass():
     '''
@@ -42,8 +42,12 @@ class BaseClass():
 
         else:
             your_access_key_id, your_secret_access_key = self.get_key()
-            # 아래 설정들은 $SPARK_HOME/conf/spark-defaults.conf 아래에 넣어두는게 좋습니다.
+            # 아래 설정들은 $SPARK_HOME/conf/spark-defaults.conf 아래에 넣어두는게 좋습니다. -> 드라이버가 뜨는 클러스터에 적용(서버 3대에 동일하게 적용)
             # (모든 spark app에 공통으로 적용되고, access_key 같은 정보들은 서버에 있는 정보이므로 하드코딩해도 됨)
+            # sparksms 옵션을 먹는 순서가 있는데 spark-defaults.conf 이 파일을 먼저 먹고 올라온다.
+            # 그 다음 보는게 코드에 정의된 값을 보고 올라온다.
+            # 만약 spark-defaults.conf 에도 설정이 되어있고 코드에도 설정이 되어있으면 코드에 설정된 값이 덮어씌워진다.
+            # 마지막으로 spark-submit 명령어로 옵션을 주면 그 옵션이 가장 우선순위가 높다.
             spark = SparkSession \
                     .builder \
                     .appName(self.app_name) \

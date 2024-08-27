@@ -1,4 +1,4 @@
-from spark_streaming.apps.ddareungi.ddareungi_base_class import DdareungiBaseClass
+from ddareungi_base_class import DdareungiBaseClass
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
 from pyspark.sql.dataframe import DataFrame
@@ -15,6 +15,7 @@ class DdareungiToS3(DdareungiBaseClass):
         
         self.logger.write_log('INFO', 'Creating Spark session', None)
         spark = self.create_spark_session()
+        spark.sparkContext.setCheckpointDir(self.checkpoint_location)
         self.logger.write_log('INFO', 'Spark session created successfully', None)
 
         self.logger.write_log('INFO', 'Initializing state_df', None)
@@ -94,6 +95,8 @@ class DdareungiToS3(DdareungiBaseClass):
             F.col("parkingBikeTotCnt").alias("previous_parkingBikeTotCnt")
         )
         state_df = new_state_df
+        state_df.checkpoint()
+        
 
         self.logger.write_log('INFO', 'Calculating hourly summary', epoch_id)
         hourly_summary = changes_df.groupBy(

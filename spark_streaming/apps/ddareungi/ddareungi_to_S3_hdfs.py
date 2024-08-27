@@ -1,4 +1,4 @@
-from spark_streaming.apps.ddareungi.ddareungi_base_class import DdareungiBaseClass
+from ddareungi_base_class import DdareungiBaseClass
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
 from pyspark.sql.dataframe import DataFrame
@@ -9,14 +9,17 @@ class DdareungiToS3(DdareungiBaseClass):
         super().__init__(app_name)
         self.topic_lst = ['bike-station-info']
         self.log_mode = 'DEBUG'
-        self.checkpoint_location = "/home/ubuntu/ddareungi/checkpoint"  # HDFS 체크포인트 위치 설정
-        self.state_store_location = "/home/ubuntu/ddareungi/state_store"  # HDFS 상태 저장소 위치 설정
+        self.checkpoint_location = "/home/ubuntu/ddareungi/checkpoint"  
+        self.state_store_location = "/home/ubuntu/ddareungi/state_store"  
 
     def _main(self):
         self.logger.write_log('INFO', 'Starting _main method', None)
         
         self.logger.write_log('INFO', 'Creating Spark session', None)
         spark = self.create_spark_session()
+        #############################################################################################################################
+        spark.sparkContext.setCheckpointDir(self.checkpoint_location)
+        #############################################################################################################################
         self.logger.write_log('INFO', 'Spark session created successfully', None)
 
         self.logger.write_log('INFO', 'Setting up streaming query', None)
@@ -54,7 +57,9 @@ class DdareungiToS3(DdareungiBaseClass):
 
         # 상태 정보 로드
         state_df = self.load_state()
-
+        #############################################################################################################################
+        state_df.checkpoint()
+        #############################################################################################################################
         self.logger.write_log('INFO', 'Joining dataframes', epoch_id)
         joined_df = json_df.join(state_df, on="stationId", how="left")
 

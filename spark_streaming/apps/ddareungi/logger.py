@@ -26,3 +26,4 @@ class Logger:
             getattr(self.logger, log_type.lower())(f'[STEP{self.step_num}] {msg}')
         else:
             getattr(self.logger, log_type.lower())(f'[EPOCH:{epoch_id}][STEP{self.step_num}] {msg}')
+            # getattr이란? 

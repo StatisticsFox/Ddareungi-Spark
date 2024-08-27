@@ -1,4 +1,4 @@
-from spark_streaming.common.base_class import BaseClass
+from base_class import BaseClass
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType
 
 

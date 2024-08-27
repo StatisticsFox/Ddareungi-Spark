@@ -29,7 +29,6 @@ class RedisConfig():
         :param table_nm: redis 테이블명
         :param key_col_lst: redis 테이블명 뒤에 붙는 key
         '''
-
         keys_str = ','.join(key_col_lst)
         df.write \
             .format("org.apache.spark.sql.redis") \
