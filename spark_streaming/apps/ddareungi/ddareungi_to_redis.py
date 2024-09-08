@@ -1,4 +1,4 @@
-from spark_streaming.apps.ddareungi.ddareungi_base_class import DdareungiBaseClass
+from ddareungi_base_class import DdareungiBaseClass
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
 from pyspark.sql.dataframe import DataFrame
