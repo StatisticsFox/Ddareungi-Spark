@@ -9,11 +9,11 @@ class DdareungiToRedis(DdareungiBaseClass):
         self.logger.write_log('INFO', f'Initializing {app_name}', epoch_id=None)
 
     def _main(self):
-        self.logger.write_log('INFO', 'Starting _main method')
+        self.logger.write_log('INFO', 'Starting _main method',epoch_id=None)
         spark = self.create_spark_session(redis_master_name='mymaster')
-        self.logger.write_log('INFO', 'Spark session created')
+        self.logger.write_log('INFO', 'Spark session created',epoch_id=None)
 
-        self.logger.write_log('INFO', f'Setting up Kafka stream with topics: {self.source_topic_lst}')
+        self.logger.write_log('INFO', f'Setting up Kafka stream with topics: {self.source_topic_lst}',epoch_id=None)
         query = spark.readStream \
             .format("kafka") \
             .option("kafka.bootstrap.servers", self.bootstrap_servers) \
@@ -22,15 +22,15 @@ class DdareungiToRedis(DdareungiBaseClass):
             .load() \
             .selectExpr("CAST(value AS STRING) as value")
         
-        self.logger.write_log('INFO', 'Kafka stream setup complete')
+        self.logger.write_log('INFO', 'Kafka stream setup complete',epoch_id=None)
 
-        self.logger.write_log('INFO', 'Starting streaming query')
+        self.logger.write_log('INFO', 'Starting streaming query',epoch_id=None)
         query = query.writeStream \
             .foreachBatch(lambda df, epoch_id: self.process_batch(df, epoch_id)) \
             .outputMode("update") \
             .start()
 
-        self.logger.write_log('INFO', 'Streaming query started, awaiting termination')
+        self.logger.write_log('INFO', 'Streaming query started, awaiting termination',epoch_id=None)
         query.awaitTermination()
 
     def process_batch(self, df: DataFrame, epoch_id):
@@ -39,12 +39,12 @@ class DdareungiToRedis(DdareungiBaseClass):
         self.logger.write_log('INFO', 'Parsing JSON data')
         value_df = df.select(F.from_json(F.col("value"), self.ddareungi_schema).alias("value"))
         value_cnt = value_df.count()
-        self.logger.write_log('INFO', f'Parsed {value_cnt} records')
+        self.logger.write_log('INFO', f'Parsed {value_cnt} records',epoch_id=None)
 
-        self.logger.write_log('INFO', 'Flattening DataFrame')
+        self.logger.write_log('INFO', 'Flattening DataFrame',epoch_id=None)
         flattened_df = value_df.select("value.*")
 
-        self.logger.write_log('INFO', 'Writing to Redis')
+        self.logger.write_log('INFO', 'Writing to Redis',epoch_id=None)
         self.redis_config.write_to_redis(
             df=flattened_df,
             table_nm='bike_stations',
@@ -52,10 +52,10 @@ class DdareungiToRedis(DdareungiBaseClass):
         )
 
         self.logger.write_log('INFO', f'Redis transmission complete ({value_cnt} records)', epoch_id)
-        self.logger.write_log('INFO', f'Microbatch {epoch_id} processing complete')
+        self.logger.write_log('INFO', f'Microbatch {epoch_id} processing complete',epoch_id=None)
 
 if __name__ == "__main__":
     app = DdareungiToRedis("DdareungiToRedis")
     app.logger.write_log('INFO', 'Application initialized, starting main process', epoch_id=None)
     app._main()
-    app.logger.write_log('INFO', 'Application terminated')
+    app.logger.write_log('INFO', 'Application terminated',epoch_id=None)
