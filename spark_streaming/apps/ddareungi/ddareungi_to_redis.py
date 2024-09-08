@@ -4,6 +4,7 @@ import pyspark.sql.types as T
 from pyspark.sql.dataframe import DataFrame
 
 class Logger:
+    # Logger 클래스에서 write_log 메서드를 수정하여 epoch_id를 선택적으로 받도록 설정
     def write_log(self, log_level, message, epoch_id=None):
         if epoch_id is not None:
             print(f'[{log_level}] {message} (Epoch: {epoch_id})')
@@ -13,7 +14,8 @@ class Logger:
 class DdareungiToRedis(DdareungiBaseClass):
     def __init__(self, app_name):
         super().__init__(app_name)
-        self.logger.write_log('INFO', f'Initializing {app_name}')  # epoch_id 없음
+        # 초기화 시에는 epoch_id 필요 없음
+        self.logger.write_log('INFO', f'Initializing {app_name}')
 
     def _main(self):
         self.logger.write_log('INFO', 'Starting _main method')  # epoch_id 없음
@@ -41,28 +43,30 @@ class DdareungiToRedis(DdareungiBaseClass):
         query.awaitTermination()
 
     def process_batch(self, df: DataFrame, epoch_id):
-        self.logger.write_log('INFO', f'Processing microbatch', epoch_id)  # epoch_id 포함
+        # epoch_id가 포함된 로그 출력
+        self.logger.write_log('INFO', f'Processing microbatch', epoch_id)
 
-        self.logger.write_log('INFO', 'Parsing JSON data', epoch_id)  # epoch_id 포함
+        self.logger.write_log('INFO', 'Parsing JSON data', epoch_id)
         value_df = df.select(F.from_json(F.col("value"), self.ddareungi_schema).alias("value"))
         value_cnt = value_df.count()
-        self.logger.write_log('INFO', f'Parsed {value_cnt} records', epoch_id)  # epoch_id 포함
+        self.logger.write_log('INFO', f'Parsed {value_cnt} records', epoch_id)
 
-        self.logger.write_log('INFO', 'Flattening DataFrame', epoch_id)  # epoch_id 포함
+        self.logger.write_log('INFO', 'Flattening DataFrame', epoch_id)
         flattened_df = value_df.select("value.*")
 
-        self.logger.write_log('INFO', 'Writing to Redis', epoch_id)  # epoch_id 포함
+        self.logger.write_log('INFO', 'Writing to Redis', epoch_id)
         self.redis_config.write_to_redis(
             df=flattened_df,
             table_nm='bike_stations',
             key_col_lst=['stationId']
         )
 
-        self.logger.write_log('INFO', f'Redis transmission complete ({value_cnt} records)', epoch_id)  # epoch_id 포함
-        self.logger.write_log('INFO', f'Microbatch {epoch_id} processing complete', epoch_id)  # epoch_id 포함
+        self.logger.write_log('INFO', f'Redis transmission complete ({value_cnt} records)', epoch_id)
+        self.logger.write_log('INFO', f'Microbatch {epoch_id} processing complete', epoch_id)
 
 if __name__ == "__main__":
     app = DdareungiToRedis("DdareungiToRedis")
-    app.logger.write_log('INFO', 'Application initialized, starting main process')  # epoch_id 없음
+    # 초기화 시 epoch_id 없이 로그 기록
+    app.logger.write_log('INFO', 'Application initialized, starting main process')
     app._main()
-    app.logger.write_log('INFO', 'Application terminated')  # epoch_id 없음
+    app.logger.write_log('INFO', 'Application terminated')
