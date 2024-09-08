@@ -3,6 +3,13 @@ import pyspark.sql.functions as F
 import pyspark.sql.types as T
 from pyspark.sql.dataframe import DataFrame
 
+class Logger:
+    def write_log(self, log_level, message, epoch_id=None):
+        if epoch_id is not None:
+            print(f'[{log_level}] {message} (Epoch: {epoch_id})')
+        else:
+            print(f'[{log_level}] {message}')
+
 class DdareungiToRedis(DdareungiBaseClass):
     def __init__(self, app_name):
         super().__init__(app_name)
