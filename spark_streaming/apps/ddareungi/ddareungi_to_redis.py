@@ -6,7 +6,7 @@ from pyspark.sql.dataframe import DataFrame
 class DdareungiToRedis(DdareungiBaseClass):
     def __init__(self, app_name):
         super().__init__(app_name)
-        self.logger.write_log('INFO', f'Initializing {app_name}')
+        self.logger.write_log('INFO', f'Initializing {app_name}', epoch_id=None)
 
     def _main(self):
         self.logger.write_log('INFO', 'Starting _main method')
