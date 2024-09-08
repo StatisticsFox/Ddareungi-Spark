@@ -56,6 +56,6 @@ class DdareungiToRedis(DdareungiBaseClass):
 
 if __name__ == "__main__":
     app = DdareungiToRedis("DdareungiToRedis")
-    app.logger.write_log('INFO', 'Application initialized, starting main process')
+    app.logger.write_log('INFO', 'Application initialized, starting main process', epoch_id=None)
     app._main()
     app.logger.write_log('INFO', 'Application terminated')
